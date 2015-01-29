@@ -1,4 +1,4 @@
-﻿// needs Markdown.Converter.js at the moment
+// needs Markdown.Converter.js at the moment
 
 (function () {
 
@@ -806,13 +806,13 @@
                 result = window.pageYOffset;
             }
             else
-                if (doc.documentElement && doc.documentElement.scrollTop) {
-                    result = doc.documentElement.scrollTop;
-                }
-                else
-                    if (doc.body) {
-                        result = doc.body.scrollTop;
-                    }
+            if (doc.documentElement && doc.documentElement.scrollTop) {
+                result = doc.documentElement.scrollTop;
+            }
+            else
+            if (doc.body) {
+                result = doc.body.scrollTop;
+            }
 
             return result;
         };
@@ -1014,7 +1014,7 @@
             else {
                 // Fixes common pasting errors.
                 text = text.replace(/^http:\/\/(https?|ftp):\/\//, '$1://');
-                if (!/^(?:https?|ftp):\/\//.test(text))
+                if (!/^(?:https?|ftp):\/\/|^mailto:/.test(text))
                     text = 'http://' + text;
             }
 
@@ -1544,60 +1544,61 @@
     };
 
     commandProto.addLinkDef = function (chunk, linkDef) {
-
-        var refNumber = 0; // The current reference number
-        var defsToAdd = {}; //
-        // Start with a clean slate by removing all previous link definitions.
-        chunk.before = this.stripLinkDefs(chunk.before, defsToAdd);
-        chunk.selection = this.stripLinkDefs(chunk.selection, defsToAdd);
-        chunk.after = this.stripLinkDefs(chunk.after, defsToAdd);
-
-        var defs = "";
-        var regex = /(\[)((?:\[[^\]]*\]|[^\[\]])*)(\][ ]?(?:\n[ ]*)?\[)(\d+)(\])/g;
-
-        var addDefNumber = function (def) {
-            refNumber++;
-            def = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
-            defs += "\n" + def;
-        };
-
-        // note that
-        // a) the recursive call to getLink cannot go infinite, because by definition
-        //    of regex, inner is always a proper substring of wholeMatch, and
-        // b) more than one level of nesting is neither supported by the regex
-        //    nor making a lot of sense (the only use case for nesting is a linked image)
-        var getLink = function (wholeMatch, before, inner, afterInner, id, end) {
-            inner = inner.replace(regex, getLink);
-            if (defsToAdd[id]) {
-                addDefNumber(defsToAdd[id]);
-                return before + inner + afterInner + refNumber + end;
-            }
-            return wholeMatch;
-        };
-
-        chunk.before = chunk.before.replace(regex, getLink);
-
-        if (linkDef) {
-            addDefNumber(linkDef);
-        }
-        else {
-            chunk.selection = chunk.selection.replace(regex, getLink);
-        }
-
-        var refOut = refNumber;
-
-        chunk.after = chunk.after.replace(regex, getLink);
-
-        if (chunk.after) {
-            chunk.after = chunk.after.replace(/\n*$/, "");
-        }
-        if (!chunk.after) {
-            chunk.selection = chunk.selection.replace(/\n*$/, "");
-        }
-
-        chunk.after += "\n\n" + defs;
-
-        return refOut;
+        console.log("addLinkDef: " + chunk + linkDef);
+        return linkDef;
+        //var refNumber = 0; // The current reference number
+        //var defsToAdd = {}; //
+        //// Start with a clean slate by removing all previous link definitions.
+        //chunk.before = this.stripLinkDefs(chunk.before, defsToAdd);
+        //chunk.selection = this.stripLinkDefs(chunk.selection, defsToAdd);
+        //chunk.after = this.stripLinkDefs(chunk.after, defsToAdd);
+        //
+        //var defs = "";
+        //var regex = /(\[)((?:\[[^\]]*\]|[^\[\]])*)(\][ ]?(?:\n[ ]*)?\[)(\d+)(\])/g;
+        //
+        //var addDefNumber = function (def) {
+        //    refNumber++;
+        //    def = def.replace(/^[ ]{0,3}\[(\d+)\]:/, "  [" + refNumber + "]:");
+        //    defs += "\n" + def;
+        //};
+        //
+        //// note that
+        //// a) the recursive call to getLink cannot go infinite, because by definition
+        ////    of regex, inner is always a proper substring of wholeMatch, and
+        //// b) more than one level of nesting is neither supported by the regex
+        ////    nor making a lot of sense (the only use case for nesting is a linked image)
+        //var getLink = function (wholeMatch, before, inner, afterInner, id, end) {
+        //    inner = inner.replace(regex, getLink);
+        //    if (defsToAdd[id]) {
+        //        addDefNumber(defsToAdd[id]);
+        //        return before + inner + afterInner + refNumber + end;
+        //    }
+        //    return wholeMatch;
+        //};
+        //
+        //chunk.before = chunk.before.replace(regex, getLink);
+        //
+        //if (linkDef) {
+        //    addDefNumber(linkDef);
+        //}
+        //else {
+        //    chunk.selection = chunk.selection.replace(regex, getLink);
+        //}
+        //
+        //var refOut = refNumber;
+        //
+        //chunk.after = chunk.after.replace(regex, getLink);
+        //
+        //if (chunk.after) {
+        //    chunk.after = chunk.after.replace(/\n*$/, "");
+        //}
+        //if (!chunk.after) {
+        //    chunk.selection = chunk.selection.replace(/\n*$/, "");
+        //}
+        //
+        //chunk.after += "\n\n" + defs;
+        //
+        //return refOut;
     };
 
     // takes the line as entered into the add link/as image dialog and makes
@@ -1671,11 +1672,12 @@
                     // the first bracket could then not act as the "not a backslash" for the second.
                     chunk.selection = (" " + chunk.selection).replace(/([^\\](?:\\\\)*)(?=[[\]])/g, "$1\\").substr(1);
 
-                    var linkDef = " [999]: " + properlyEncoded(link);
+                    //var linkDef = " [999]: " + properlyEncoded(link);
 
-                    var num = that.addLinkDef(chunk, linkDef);
+                    //var num = that.addLinkDef(chunk, linkDef);
                     chunk.startTag = isImage ? "![" : "[";
-                    chunk.endTag = "][" + num + "]";
+                    //chunk.endTag = "][" + num + "]";
+                    chunk.endTag = "](" + link + ")";
 
                     if (!chunk.selection) {
                         if (isImage) {
@@ -1768,15 +1770,15 @@
         // text *directly before* the selection already was a blockquote:
 
         /*
-        if (chunk.before) {
-        chunk.before = chunk.before.replace(/\n?$/, "\n");
-        }
-        chunk.before = chunk.before.replace(/(((\n|^)(\n[ \t]*)*>(.+\n)*.*)+(\n[ \t]*)*$)/,
-        function (totalMatch) {
-        chunk.startTag = totalMatch;
-        return "";
-        });
-        */
+         if (chunk.before) {
+         chunk.before = chunk.before.replace(/\n?$/, "\n");
+         }
+         chunk.before = chunk.before.replace(/(((\n|^)(\n[ \t]*)*>(.+\n)*.*)+(\n[ \t]*)*$)/,
+         function (totalMatch) {
+         chunk.startTag = totalMatch;
+         return "";
+         });
+         */
 
         // This comes down to:
         // Go backwards as many lines a possible, such that each line
@@ -1883,10 +1885,10 @@
 
         if (!/\n/.test(chunk.selection)) {
             chunk.selection = chunk.selection.replace(/^(> *)/,
-            function (wholeMatch, blanks) {
-                chunk.startTag += blanks;
-                return "";
-            });
+                function (wholeMatch, blanks) {
+                    chunk.startTag += blanks;
+                    return "";
+                });
         }
     };
 
