@@ -5,3 +5,9 @@ $ ->
     Markdown.Extra.init(converter)
     editor = new Markdown.Editor(converter, attr)
     editor.run()
+    textarea = $(this)
+    text = textarea.val()
+    textarea.val(text.replace(/\s\s\n/g, "\n")) # strip double blank line endings in editor
+    $(this.form).on 'submit', ->
+      text = textarea.val()
+      textarea.val(text.replace(/(\S)\n/g, "$1  \n")) # insert two blanks on line endings to create a markdown linebreak
